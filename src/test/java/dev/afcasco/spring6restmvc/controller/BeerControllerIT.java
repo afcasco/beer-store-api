@@ -132,4 +132,5 @@ class BeerControllerIT {
         assertThrows(NotFoundException.class, () ->
                 beerController.deleteById(UUID.randomUUID()));
     }
+
 }
