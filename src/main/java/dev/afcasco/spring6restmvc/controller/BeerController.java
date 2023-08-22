@@ -47,13 +47,15 @@ public class BeerController {
 
     @PutMapping(BEER_PATH_ID)
     public ResponseEntity updateById(@PathVariable UUID beerId, @RequestBody BeerDTO beer) {
-        beerService.updateById(beerId, beer);
+        beerService.updateById(beerId, beer).orElseThrow(NotFoundException::new);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping(BEER_PATH_ID)
     public ResponseEntity deleteById(@PathVariable UUID beerId) {
-        beerService.deleteById(beerId);
+        if(!beerService.deleteById(beerId)){
+            throw new NotFoundException();
+        }
         return ResponseEntity.noContent().build();
     }
 
