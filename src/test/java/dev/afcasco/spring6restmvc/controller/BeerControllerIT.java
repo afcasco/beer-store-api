@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.afcasco.spring6restmvc.entity.Beer;
 import dev.afcasco.spring6restmvc.mapper.BeerMapper;
 import dev.afcasco.spring6restmvc.model.BeerDTO;
+import dev.afcasco.spring6restmvc.model.BeerStyle;
 import dev.afcasco.spring6restmvc.repository.BeerRepository;
+import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import static org.hamcrest.core.Is.is;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -59,9 +62,9 @@ class BeerControllerIT {
 
     @Test
     void testListBeers() {
-        List<BeerDTO> dtos = beerController.listBeers();
+        List<BeerDTO> dtos = beerController.listBeers(null, null, false);
 
-        assertThat(dtos.size()).isEqualTo(3);
+        assertThat(dtos.size()).isEqualTo(2413);
 
     }
 
@@ -71,7 +74,7 @@ class BeerControllerIT {
     void testEmptyList() {
 
         beerRepository.deleteAll();
-        List<BeerDTO> dtos = beerController.listBeers();
+        List<BeerDTO> dtos = beerController.listBeers(null, null, false);
 
         assertThat(dtos.size()).isEqualTo(0);
     }
@@ -167,15 +170,60 @@ class BeerControllerIT {
 
         Map<String, Object> beerMap = new HashMap<>();
         beerMap.put("beerName", "New Name".repeat(40));
-        MvcResult result = mockMvc.perform(patch(BeerController.BEER_PATH_ID ,beer.getId())
+        MvcResult result = mockMvc.perform(patch(BeerController.BEER_PATH_ID, beer.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(beerMap))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.length()",is(2)))
+                .andExpect(jsonPath("$.length()", is(2)))
                 .andReturn();
 
         System.out.println(result.getResponse().getContentAsString());
     }
 
+    @Test
+    void testListBeersByName() throws Exception {
+        mockMvc.perform(get(BeerController.BEER_PATH)
+                        .queryParam("beerName", "IPA"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()", is(336)));
+    }
+
+    @Test
+    void testListBeersByBeerStyle() throws Exception {
+        mockMvc.perform(get(BeerController.BEER_PATH)
+                        .queryParam("beerStyle", BeerStyle.IPA.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()", is(548)));
+    }
+
+    @Test
+    void testListBeersByNameAndBeerStyle() throws Exception {
+        mockMvc.perform(get(BeerController.BEER_PATH)
+                .queryParam("beerStyle",BeerStyle.IPA.name())
+                .queryParam("beerName","IPA"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()",is(310)));
+
+    }
+
+    @Test
+    void testListBeerByStyleAndNameShowInventoryFalse() throws Exception{
+        mockMvc.perform(get(BeerController.BEER_PATH)
+                .queryParam("beerName","IPA")
+                .queryParam("beerStyle",BeerStyle.IPA.name())
+                .queryParam("showInventory","false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.[0].quantityOnHand").value(IsNull.nullValue()));
+    }
+
+    @Test
+    void testListBeerByStyleAndNameShowInventoryTrue() throws Exception{
+        mockMvc.perform(get(BeerController.BEER_PATH)
+                        .queryParam("beerName","IPA")
+                        .queryParam("beerStyle",BeerStyle.IPA.name())
+                        .queryParam("showInventory","true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.[0].quantityOnHand").value(IsNull.notNullValue()));
+    }
 }
