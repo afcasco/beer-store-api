@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -74,7 +75,10 @@ public class BeerServiceJPA implements BeerService {
             }
         }
 
-        return PageRequest.of(queryPageNumber, queryPageSize);
+
+        Sort sort = Sort.by(Sort.Order.asc("beerName"));
+
+        return PageRequest.of(queryPageNumber, queryPageSize, sort);
 
     }
 
