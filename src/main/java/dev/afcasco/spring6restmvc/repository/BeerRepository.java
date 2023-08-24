@@ -2,17 +2,18 @@ package dev.afcasco.spring6restmvc.repository;
 
 import dev.afcasco.spring6restmvc.entity.Beer;
 import dev.afcasco.spring6restmvc.model.BeerStyle;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface BeerRepository extends JpaRepository<Beer, UUID> {
 
-    List<Beer> findAllBeerByBeerNameIsLikeIgnoreCase(String beerName);
+    Page<Beer> findAllBeerByBeerNameIsLikeIgnoreCase(String beerName, Pageable pageable);
 
-    List<Beer> findAllBeerByBeerStyleIs(BeerStyle beerStyle);
+    Page<Beer> findAllBeerByBeerStyleIs(BeerStyle beerStyle, Pageable pageable);
 
-    List<Beer> findAllBeerByBeerNameIsLikeIgnoreCaseAndBeerStyle(String beerName, BeerStyle beerStyle);
+    Page<Beer> findAllBeerByBeerNameIsLikeIgnoreCaseAndBeerStyle(String beerName, BeerStyle beerStyle, Pageable pageable);
 
 }
