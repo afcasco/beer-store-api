@@ -2,11 +2,12 @@ package dev.afcasco.spring6restmvc.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -19,8 +20,8 @@ import java.util.UUID;
 public class Customer {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name= "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(strategy = GenerationType.UUID)
+  /*  @GenericGenerator(name= "UUID", type = org.hibernate.id.uuid.UuidGenerator.class)*/
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
     private UUID id;
@@ -34,4 +35,8 @@ public class Customer {
 
     private LocalDateTime createdTime;
     private LocalDateTime lastModifiedDate;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "customer")
+    private Set<BeerOrder> beerOrders = new HashSet<>();
 }
